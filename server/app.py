@@ -19,7 +19,9 @@ with app.app_context():
 
 @app.route('/products', methods=['GET'])
 def all_products():
-    return db.session.query(Product).all()
+    products = Product.query.all()
+    return jsonify([{"id": p.id, "name": p.name, "url": p.url, "price": p.price} for p in products])
+
 
 
 @app.route('/add_product', methods=['POST'])
@@ -30,7 +32,9 @@ def add_product():
     # Faz o scraping do preço
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
-    price = float(soup.find(class_="price").text.replace("R$", "").replace(",", "."))
+    price_str = soup.find('span',class_="a-offscreen").text.replace("R$", "").replace(",", ".")
+
+    price = (float(price_str.replace(".", ""))/100)
 
     new_product = Product(name=data.get('name'), url=url, price=price)
     db.session.add(new_product)
