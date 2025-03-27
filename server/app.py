@@ -23,6 +23,21 @@ def all_products():
     return jsonify([{"id": p.id, "name": p.name, "url": p.url, "price": p.price} for p in products])
 
 
+@app.route('/product/<int:id>', methods=['PUT'])
+def update_product(id):
+    product = Product.query.get(id)
+    if not product:
+        return jsonify({"error": "Produto não encontrado"}), 404
+    
+    data = request.json
+    product.name = data.get("name", product.name)
+    product.url = data.get("url", product.url)
+    product.price = data.get("price", product.price)
+
+    db.session.commit()
+
+    return jsonify({"message": "Produto Alterado com Sucesso!"})
+
 
 @app.route('/add_product', methods=['POST'])
 def add_product():
