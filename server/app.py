@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-import apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
 import time
 import requests
 from bs4 import BeautifulSoup
@@ -42,16 +42,21 @@ def update_product(id):
 
 
 def update_all_products():
-    products = Product.query.all()
-    for product in products:
-        soup = BeautifulSoup(product.url, 'html.parser')
-        price_str = soup.find('span',class_="a-offscreen").text.replace("R$", "").replace(",", ".")
-        product.price = (float(price_str.replace(".", ""))/100)
-    
-    db.session.commit()
+    with app.app_context():
+        products = Product.query.all()
+        if products:
+            for product in products:
+                response = requests.get(product.url)
+                soup = BeautifulSoup(response.text, 'html.parser')
+                price_str = soup.find('span',class_="a-offscreen").text.replace("R$", "").replace(",", ".")
+                product.price = (float(price_str.replace(".", ""))/100)
+           
+                db.session.commit()
+        else:
+            print("error ao obter produtos")
 
-scheduler = BackgroundScheduler
-scheduler.add_job(func=update_all_products, trigger='interval', seconds=60)
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=update_all_products, trigger='interval', seconds=20)
 scheduler.start()
 
 
