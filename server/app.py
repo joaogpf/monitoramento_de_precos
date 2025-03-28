@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+import apscheduler.schedulers.background import BackgroundScheduler
+import time
 import requests
 from bs4 import BeautifulSoup
 
@@ -47,6 +49,10 @@ def update_all_products():
         product.price = (float(price_str.replace(".", ""))/100)
     
     db.session.commit()
+
+scheduler = BackgroundScheduler
+scheduler.add_job(func=update_all_products, trigger='interval', seconds=60)
+scheduler.start()
 
 
 
