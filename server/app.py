@@ -39,6 +39,17 @@ def update_product(id):
     return jsonify({"message": "Produto Alterado com Sucesso!"})
 
 
+def update_all_products():
+    products = Product.query.all()
+    for product in products:
+        soup = BeautifulSoup(product.url, 'html.parser')
+        price_str = soup.find('span',class_="a-offscreen").text.replace("R$", "").replace(",", ".")
+        product.price = (float(price_str.replace(".", ""))/100)
+    
+    db.session.commit()
+
+
+
 @app.route('/add_product', methods=['POST'])
 def add_product():
     data = request.json
