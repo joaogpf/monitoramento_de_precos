@@ -1,9 +1,10 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from apscheduler.schedulers.background import BackgroundScheduler
-import time
+import datetime
 import requests
 from bs4 import BeautifulSoup
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///prices.db'
@@ -11,9 +12,17 @@ db = SQLAlchemy(app)
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(200), nullable=False)
+    name = db.Column(db.String(200), nullable=True)
     url = db.Column(db.String(500), nullable=False)
     price = db.Column(db.Float, nullable=True)
+
+class PriceHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
+    old_price = db.Column(db.Float)
+    new_price = db.Column(db.Float)
+    price_variation = db.Column(db.Float)  # Variação do preço
+    date = db.Column(db.DateTime, default=datetime.utcnow)
 
 with app.app_context():
     db.create_all()
@@ -69,11 +78,12 @@ def add_product():
     # Faz o scraping do preço
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
+    name = soup.find('span', id="productTitle").text
     price_str = soup.find('span',class_="a-offscreen").text.replace("R$", "").replace(",", ".")
 
     price = (float(price_str.replace(".", ""))/100)
 
-    new_product = Product(name=data.get('name'), url=url, price=price)
+    new_product = Product(name=name, url=url, price=price)
     db.session.add(new_product)
     db.session.commit()
 
