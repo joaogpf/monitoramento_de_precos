@@ -27,13 +27,13 @@ class PriceHistory(db.Model):
 with app.app_context():
     db.create_all()
 
-
+#rota para selecionar todos os produtos
 @app.route('/products', methods=['GET'])
 def all_products():
     products = Product.query.all()
     return jsonify([{"id": p.id, "name": p.name, "url": p.url, "price": p.price} for p in products])
 
-
+#rota para editar produto
 @app.route('/product/<int:id>', methods=['PUT'])
 def update_product(id):
     product = Product.query.get(id)
@@ -49,7 +49,7 @@ def update_product(id):
 
     return jsonify({"message": "Produto Alterado com Sucesso!"})
 
-
+#função que vai atualizar o preço dos produtos em um determinado espaço de tempo
 def update_all_products():
     with app.app_context():
         products = Product.query.all()
@@ -69,7 +69,7 @@ scheduler.add_job(func=update_all_products, trigger='interval', seconds=20)
 scheduler.start()
 
 
-
+#rota para adicionar produto
 @app.route('/add_product', methods=['POST'])
 def add_product():
     data = request.json
