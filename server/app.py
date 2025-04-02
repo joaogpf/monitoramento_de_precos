@@ -1,12 +1,14 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from apscheduler.schedulers.background import BackgroundScheduler
-import datetime
+from datetime import datetime
 import requests
+from flask_cors import CORS
 from bs4 import BeautifulSoup
 
 
 app = Flask(__name__)
+CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///prices.db'
 db = SQLAlchemy(app)
 
@@ -22,7 +24,7 @@ class PriceHistory(db.Model):
     old_price = db.Column(db.Float)
     new_price = db.Column(db.Float)
     price_variation = db.Column(db.Float)  # Variação do preço
-    date = db.Column(db.DateTime, default=datetime.utcnow)
+    date = db.Column(db.DateTime, default=datetime.now())
 
 with app.app_context():
     db.create_all()
