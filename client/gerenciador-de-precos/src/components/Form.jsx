@@ -1,5 +1,5 @@
 import React from "react";
-import axios from axios
+import axios from "axios"
 import { useState } from "react";
 
 const Form = () => {
@@ -9,10 +9,27 @@ const Form = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        const response = await axios.post("", {
-            url
-        })
+
+        try {
+            const response = await axios.post("http://127.0.0.1:5000/add_product", 
+                { url },
+                { headers: { "Content-Type": "application/json" } }
+            )
+        } catch(error) {
+            console.error(error)
+        }
+       
     }
+
+    return (
+        <div className="formContainer">
+            <form onSubmit={handleSubmit} className="submitForm">
+                <label>Url</label>
+                <input value={url} type="text" onChange={(e) => setUrl(e.target.value)} required/>
+                <button type="submit">Cadastrar</button>
+            </form>
+        </div>
+    )
 }
 
 export default Form
