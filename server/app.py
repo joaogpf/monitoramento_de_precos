@@ -22,8 +22,8 @@ class PriceHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
     old_price = db.Column(db.Float)
-    new_price = db.Column(db.Float)
-    price_variation = db.Column(db.Float)  # Variação do preço
+    new_price = db.Column(db.Float, default=0)
+    price_variation = db.Column(db.Float, default=0)  # Variação do preço
     date = db.Column(db.DateTime, default=datetime.now())
 
 with app.app_context():
@@ -34,6 +34,13 @@ with app.app_context():
 def all_products():
     products = Product.query.all()
     return jsonify([{"id": p.id, "name": p.name, "url": p.url, "price": p.price} for p in products])
+
+@app.route('/prices', methods=['GET'])
+def all_prices():
+    prices = PriceHistory.query.all()
+    return jsonify([{"id": p.id, "product_id": p.product_id, "old_price": p.old_price, "new_price": p.new_price, 
+                                      "price_variation": p.price_variation, "date": p.date} for p in prices])
+
 
 #rota para editar produto
 @app.route('/product/<int:id>', methods=['PUT'])
@@ -85,7 +92,11 @@ def add_product():
 
     price = (float(price_str.replace(".", ""))/100)
 
+    new_priceHistory = PriceHistory(product_id = data.get('id'), old_price = price)
     new_product = Product(name=name, url=url, price=price)
+    db.session.add(new_priceHistory)
+    db.session.commit()
+
     db.session.add(new_product)
     db.session.commit()
 
