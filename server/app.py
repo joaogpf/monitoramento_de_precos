@@ -62,13 +62,20 @@ def update_product(id):
 def update_all_products():
     with app.app_context():
         products = Product.query.all()
+        
         if products:
             for product in products:
+                priceHistory = PriceHistory.query.filter_by(product_id=product.id).first()
+                priceHistory.old_price = product.price
                 response = requests.get(product.url)
                 soup = BeautifulSoup(response.text, 'html.parser')
                 price_str = soup.find('span',class_="a-offscreen").text.replace("R$", "").replace(",", ".")
+                
                 product.price = (float(price_str.replace(".", ""))/100)
-           
+            
+                priceHistory.new_price = product.price
+                priceHistory.price_variation = abs(priceHistory.new_price - priceHistory.old_price)
+
                 db.session.commit()
         else:
             print("error ao obter produtos")
@@ -92,12 +99,18 @@ def add_product():
 
     price = (float(price_str.replace(".", ""))/100)
 
-    new_priceHistory = PriceHistory(product_id = data.get('id'), old_price = price)
+  
     new_product = Product(name=name, url=url, price=price)
-    db.session.add(new_priceHistory)
-    db.session.commit()
+
 
     db.session.add(new_product)
+    db.session.commit()
+
+
+    new_priceHistory = PriceHistory(product_id = new_product.id, old_price = price)
+  
+
+    db.session.add(new_priceHistory)
     db.session.commit()
 
     return jsonify({"message": "Produto cadastrado!", "price": price})
