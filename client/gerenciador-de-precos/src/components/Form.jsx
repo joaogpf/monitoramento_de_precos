@@ -1,6 +1,7 @@
 import React from "react";
 import axios from "axios"
 import { useState } from "react";
+import './Form.css'
 
 const Form = () => {
 
@@ -25,7 +26,7 @@ const Form = () => {
         <div className="formContainer">
             <form onSubmit={handleSubmit} className="submitForm">
                 <label>Url</label>
-                <input value={url} type="text" onChange={(e) => setUrl(e.target.value)} required/>
+                <input placeholder="Insira seu link da Amazon" value={url} type="text" onChange={(e) => setUrl(e.target.value)} required/>
                 <button type="submit">Cadastrar</button>
             </form>
         </div>
