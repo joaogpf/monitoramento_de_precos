@@ -9,7 +9,13 @@
  color:rgb(59, 59, 59)
 }
 
-.preco {
+.preco-atual {
     font-weight: bold;
     font-size: large;
+}
+
+.preco-antigo {
+    text-decoration: line-through;
+    font-weight: 200;
+    color: darkgrey;
 }
